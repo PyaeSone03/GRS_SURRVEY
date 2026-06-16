@@ -14,6 +14,16 @@ const PRIMARY_DARK = "#D4A04A";
 const TEXT_DARK = "#000000";
 const TEXT_LIGHT = "#6B7280";
 
+// Define the type for answers
+interface Answers {
+  name?: string;
+  age?: string;
+  gender?: string;
+  phone?: string;
+  region?: string;
+  township?: string;
+}
+
 const QUESTIONS = [
   {
     id: "name",
@@ -64,7 +74,7 @@ export default function SurveyLanding() {
   const router = useRouter();
   const [ageVerified, setAgeVerified] = useState(false);
   const [declined, setDeclined] = useState(false);
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState<Answers>({});
   const [showThanksDialog, setShowThanksDialog] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [availableTownships, setAvailableTownships] = useState<string[]>([]);
@@ -83,10 +93,11 @@ export default function SurveyLanding() {
     }
   }, [answers.region]);
 
-  const setAnswer = (id: string, value: any) => setAnswers((prev) => ({ ...prev, [id]: value }));
+  const setAnswer = (id: keyof Answers, value: any) => 
+    setAnswers((prev) => ({ ...prev, [id]: value }));
 
   const isAnswered = (q: any) => {
-    const a = answers[q.id];
+    const a = answers[q.id as keyof Answers];
     if (q.required) {
       return a !== undefined && a !== null && a !== "";
     }
@@ -198,8 +209,8 @@ export default function SurveyLanding() {
                     <QuestionCard
                       index={i}
                       question={q}
-                      answer={answers[q.id]}
-                      onAnswer={(val: any) => setAnswer(q.id, val)}
+                      answer={answers[q.id as keyof Answers]}
+                      onAnswer={(val: any) => setAnswer(q.id as keyof Answers, val)}
                       availableOptions={
                         q.id === "region" 
                           ? Object.keys(REGIONS_AND_STATES)
