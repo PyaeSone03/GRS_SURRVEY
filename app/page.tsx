@@ -48,24 +48,17 @@ const QUESTIONS = [
   },
   {
     id: "phone",
-    type: "text",
+    type: "phone",
     text: "ဖုန်းနံပါတ်",
-    placeholder: "ဥပမာ - ၀၉XXXXXX X",
+    placeholder: "09XXXXXXXX",
     required: true,
   },
   {
-    id: "region",
-    type: "select",
-    text: "ပြည်နယ် / တိုင်း",
-    placeholder: "သင့်ပြည်နယ် သို့မဟုတ် တိုင်းကို ရွေးချယ်ပါ",
-    required: true,
-  },
-  {
-    id: "township",
-    type: "select",
-    text: "မြို့နယ်",
-    placeholder: "သင့်မြို့နယ်ကို ရွေးချယ်ပါ",
-    dependsOn: "region",
+    id: "location",
+    type: "location",
+    text: "သင့်ဒေသ",
+    regionPlaceholder: "ပြည်နယ် / တိုင်း ရွေးချယ်ပါ",
+    townshipPlaceholder: "မြို့နယ် ရွေးချယ်ပါ",
     required: true,
   },
 ];
@@ -209,15 +202,14 @@ export default function SurveyLanding() {
                     <QuestionCard
                       index={i}
                       question={q}
-                      answer={answers[q.id as keyof Answers]}
-                      onAnswer={(val: any) => setAnswer(q.id as keyof Answers, val)}
+                      answer={answers}
+                      onAnswer={(id: keyof Answers, val: any) => setAnswer(id, val)}
                       availableOptions={
-                        q.id === "region" 
+                        q.id === "location" 
                           ? Object.keys(REGIONS_AND_STATES)
-                          : q.id === "township"
-                          ? availableTownships
                           : []
                       }
+                      availableTownships={availableTownships}
                       totalQuestions={QUESTIONS.length}
                     />
                   </div>

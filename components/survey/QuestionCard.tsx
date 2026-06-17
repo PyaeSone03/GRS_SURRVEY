@@ -3,66 +3,96 @@
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { OptionPill } from "./OptionPill";
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 interface QuestionCardProps {
   index: number;
   question: any;
   answer: any;
-  onAnswer: (value: any) => void;
+  onAnswer: (id: string, value: any) => void;
   availableOptions?: string[];
+  availableTownships?: string[];
   totalQuestions: number;
 }
 
-export function QuestionCard({ index, question, answer, onAnswer, availableOptions = [], totalQuestions }: QuestionCardProps) {
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-black">
-          {question.text}
-        </p>
-        {question.required && (
-          <span className="text-xs font-medium text-black/50">REQUIRED</span>
-        )}
-      </div>
-      
-      <div className="space-y-2">
-        {question.type === "text" && (
+export function QuestionCard({ 
+  index, 
+  question, 
+  answer, 
+  onAnswer, 
+  availableOptions = [], 
+  availableTownships = [],
+  totalQuestions 
+}: QuestionCardProps) {
+  const [phoneValue, setPhoneValue] = useState<string>(answer?.phone || "");
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Remove non-digit characters
+    const digits = e.target.value.replace(/\D/g, '');
+    
+    // Limit to 9 digits (after 959)
+    const limited = digits.slice(0, 9);
+    
+    // Format as +959XXXXXXXX
+    let formatted = '';
+    if (limited.length > 0) {
+      formatted = '+959' + limited;
+    }
+    
+    setPhoneValue(formatted);
+    onAnswer('phone', formatted);
+  };
+
+  // Render phone input
+  if (question.type === "phone") {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-black">
+            {question.text}
+          </p>
+          {question.required && (
+            <span className="text-xs font-medium text-black/50">REQUIRED</span>
+          )}
+        </div>
+        <div className="relative">
           <Input
-            type="text"
-            inputMode={question.inputMode || "text"}
-            pattern={question.pattern || undefined}
-            value={answer || ""}
-            onChange={(e) => {
-              // For phone number, only allow digits
-              if (question.id === "phone") {
-                const value = e.target.value.replace(/\D/g, '');
-                onAnswer(value);
-              } else {
-                onAnswer(e.target.value);
-              }
-            }}
+            type="tel"
+            value={phoneValue}
+            onChange={handlePhoneChange}
             placeholder={question.placeholder}
-            className="w-full h-11 bg-white/20 border-white/30 rounded-lg text-sm text-black placeholder:text-black/40 focus:border-black/50 focus:ring-0"
+            className="w-full h-11 pl-14 bg-white/20 border-white/30 rounded-lg text-sm text-black placeholder:text-black/40 focus:border-black/50 focus:ring-0"
           />
-        )}
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-black/60">
+            +959
+          </span>
+        </div>
+        <p className="text-xs text-black/40 mt-1">
+          ဥပမာ: 912345678
+        </p>
+      </div>
+    );
+  }
 
-        {question.type === "single" && (
-          <div className="grid grid-cols-1 gap-1.5">
-            {question.options.map((opt: string) => (
-              <OptionPill 
-                key={opt} 
-                label={opt} 
-                selected={answer === opt} 
-                onClick={() => onAnswer(opt)} 
-              />
-            ))}
-          </div>
-        )}
-
-        {question.type === "select" && (
-          <Select value={answer || ""} onValueChange={onAnswer}>
+  // Render location (region + township combined)
+  if (question.type === "location") {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-black">
+            {question.text}
+          </p>
+          {question.required && (
+            <span className="text-xs font-medium text-black/50">REQUIRED</span>
+          )}
+        </div>
+        <div className="space-y-3">
+          <Select 
+            value={answer?.region || ""} 
+            onValueChange={(val) => onAnswer('region', val)}
+          >
             <SelectTrigger className="w-full h-11 bg-white/20 border-white/30 rounded-lg text-sm text-black placeholder:text-black/40 focus:border-black/50 focus:ring-0">
-              <SelectValue placeholder={question.placeholder || "Select an option"} />
+              <SelectValue placeholder={question.regionPlaceholder || "Choose your region"} />
             </SelectTrigger>
             <SelectContent 
               className="bg-white/95 backdrop-blur-sm border-white/30 rounded-lg"
@@ -81,8 +111,87 @@ export function QuestionCard({ index, question, answer, onAnswer, availableOptio
               </SelectGroup>
             </SelectContent>
           </Select>
-        )}
+
+          <Select 
+            value={answer?.township || ""} 
+            onValueChange={(val) => onAnswer('township', val)}
+            disabled={!answer?.region}
+          >
+            <SelectTrigger className={`w-full h-11 bg-white/20 border-white/30 rounded-lg text-sm text-black placeholder:text-black/40 focus:border-black/50 focus:ring-0 ${
+              !answer?.region ? 'opacity-50 cursor-not-allowed' : ''
+            }`}>
+              <SelectValue placeholder={question.townshipPlaceholder || "Choose your township"} />
+            </SelectTrigger>
+            <SelectContent 
+              className="bg-white/95 backdrop-blur-sm border-white/30 rounded-lg"
+              style={{ minWidth: '100%', width: 'auto' }}
+            >
+              <SelectGroup>
+                {availableTownships.map((opt: string) => (
+                  <SelectItem 
+                    key={opt} 
+                    value={opt}
+                    className="text-sm hover:bg-black/5 focus:bg-black/5"
+                  >
+                    {opt}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Render regular text input (name)
+  if (question.type === "text") {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-black">
+            {question.text}
+          </p>
+          {question.required && (
+            <span className="text-xs font-medium text-black/50">REQUIRED</span>
+          )}
+        </div>
+        <Input
+          type="text"
+          value={answer?.name || ""}
+          onChange={(e) => onAnswer(question.id, e.target.value)}
+          placeholder={question.placeholder}
+          className="w-full h-11 bg-white/20 border-white/30 rounded-lg text-sm text-black placeholder:text-black/40 focus:border-black/50 focus:ring-0"
+        />
+      </div>
+    );
+  }
+
+  // Render single select (age, gender)
+  if (question.type === "single") {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-black">
+            {question.text}
+          </p>
+          {question.required && (
+            <span className="text-xs font-medium text-black/50">REQUIRED</span>
+          )}
+        </div>
+        <div className="grid grid-cols-1 gap-1.5">
+          {question.options.map((opt: string) => (
+            <OptionPill 
+              key={opt} 
+              label={opt} 
+              selected={answer?.[question.id] === opt} 
+              onClick={() => onAnswer(question.id, opt)} 
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
