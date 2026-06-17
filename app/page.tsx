@@ -234,7 +234,7 @@ export default function SurveyLanding() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    // In SurveyLanding.tsx, update the QuestionCard props
+                  
                     <QuestionCard
                       index={i}
                       question={q}
