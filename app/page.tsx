@@ -156,7 +156,7 @@ export default function SurveyLanding() {
           <div className="mx-auto flex max-w-2xl flex-col items-center justify-center">
             <div className="mb-3">
               <Image
-                src="/images/logo.png"
+                src="/images/GSM.png"
                 alt="Logo"
                 width={120}
                 height={120}
