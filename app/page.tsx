@@ -1,27 +1,27 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
-import { ChevronRight, CheckCircle2, Circle } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { AgeGateDialog } from "@/components/dialogs/AgeGateDialog";
-import { ThanksDialog } from "@/components/dialogs/ThanksDialog";
-import { QuestionCard } from "@/components/survey/QuestionCard";
-import { REGIONS_AND_STATES } from "@/lib/myanmar-data";
+import { useState, useEffect } from "react"
+import Image from "next/image"
+import { ChevronRight, CheckCircle2, Circle } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { AgeGateDialog } from "@/components/dialogs/AgeGateDialog"
+import { ThanksDialog } from "@/components/dialogs/ThanksDialog"
+import { QuestionCard } from "@/components/survey/QuestionCard"
+import { REGIONS_AND_STATES } from "@/lib/myanmar-data"
 
-const PRIMARY = "#F3BE65";
-const PRIMARY_DARK = "#D4A04A";
-const TEXT_DARK = "#000000";
-const TEXT_LIGHT = "#6B7280";
+const PRIMARY = "#F3BE65"
+const PRIMARY_DARK = "#D4A04A"
+const TEXT_DARK = "#000000"
+const TEXT_LIGHT = "#6B7280"
 
 // Define the type for answers
 interface Answers {
-  name?: string;
-  age?: string;
-  gender?: string;
-  phone?: string;
-  region?: string;
-  township?: string;
+  name?: string
+  age?: string
+  gender?: string
+  phone?: string
+  region?: string
+  township?: string
 }
 
 const QUESTIONS = [
@@ -61,79 +61,99 @@ const QUESTIONS = [
     townshipPlaceholder: "မြို့နယ် ရွေးချယ်ပါ",
     required: true,
   },
-];
+]
 
 export default function SurveyLanding() {
-  const router = useRouter();
-  const [ageVerified, setAgeVerified] = useState(false);
-  const [declined, setDeclined] = useState(false);
-  const [answers, setAnswers] = useState<Answers>({});
-  const [showThanksDialog, setShowThanksDialog] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [availableTownships, setAvailableTownships] = useState<string[]>([]);
+  const router = useRouter()
+  const [ageVerified, setAgeVerified] = useState(false)
+  const [declined, setDeclined] = useState(false)
+  const [answers, setAnswers] = useState<Answers>({})
+  const [showThanksDialog, setShowThanksDialog] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [availableTownships, setAvailableTownships] = useState<string[]>([])
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (answers.region) {
-      const townships = REGIONS_AND_STATES[answers.region as keyof typeof REGIONS_AND_STATES] || [];
-      setAvailableTownships(townships);
+      const townships =
+        REGIONS_AND_STATES[answers.region as keyof typeof REGIONS_AND_STATES] ||
+        []
+      setAvailableTownships(townships)
       if (answers.township) {
-        setAnswer("township", "");
+        setAnswer("township", "")
       }
     }
-  }, [answers.region]);
+  }, [answers.region])
 
-  const setAnswer = (id: keyof Answers, value: any) => 
-    setAnswers((prev) => ({ ...prev, [id]: value }));
+  const setAnswer = (id: keyof Answers, value: any) =>
+    setAnswers((prev) => ({ ...prev, [id]: value }))
 
   const isAnswered = (q: any) => {
-    const a = answers[q.id as keyof Answers];
+    const a = answers[q.id as keyof Answers]
     if (q.required) {
-      return a !== undefined && a !== null && a !== "";
+      return a !== undefined && a !== null && a !== ""
     }
-    return true;
-  };
+    return true
+  }
 
-  const answeredCount = QUESTIONS.filter(isAnswered).length;
-  const allAnswered = answeredCount === QUESTIONS.length;
-  const progress = answeredCount / QUESTIONS.length;
+  const answeredCount = QUESTIONS.filter(isAnswered).length
+  const allAnswered = answeredCount === QUESTIONS.length
+  const progress = answeredCount / QUESTIONS.length
 
   const handleSubmit = () => {
     if (allAnswered) {
-      const existingResponses = JSON.parse(localStorage.getItem('survey-responses') || '[]');
+      const existingResponses = JSON.parse(
+        localStorage.getItem("survey-responses") || "[]"
+      )
       const newResponse = {
         id: Date.now().toString(),
         responses: answers,
         submittedAt: new Date().toISOString(),
-      };
-      localStorage.setItem('survey-responses', JSON.stringify([...existingResponses, newResponse]));
-      setShowThanksDialog(true);
+      }
+      localStorage.setItem(
+        "survey-responses",
+        JSON.stringify([...existingResponses, newResponse])
+      )
+      setShowThanksDialog(true)
     }
-  };
+  }
 
-  if (!mounted) return null;
+  if (!mounted) return null
 
   if (declined) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center" style={{ backgroundColor: PRIMARY }}>
-        <p style={{ color: TEXT_DARK }}>ဆက်လက်လုပ်ဆောင်ရန် အသက် ၁၈ နှစ်ပြည့်ပြီးဖြစ်ရပါမည်။ နားလည်ပေးတဲ့အတွက် ကျေးဇူးတင်ပါတယ်။</p>
+      <div
+        className="flex min-h-screen flex-col items-center justify-center px-6 text-center"
+        style={{ backgroundColor: PRIMARY }}
+      >
+        <p style={{ color: TEXT_DARK }}>
+          ဆက်လက်လုပ်ဆောင်ရန် အသက် ၁၈ နှစ်ပြည့်ပြီးဖြစ်ရပါမည်။ နားလည်ပေးတဲ့အတွက်
+          ကျေးဇူးတင်ပါတယ်။
+        </p>
       </div>
-    );
+    )
   }
 
   return (
     <div className="relative min-h-screen" style={{ backgroundColor: PRIMARY }}>
       {!ageVerified && (
-        <AgeGateDialog onConfirm={() => setAgeVerified(true)} onDecline={() => setDeclined(true)} />
+        <AgeGateDialog
+          onConfirm={() => setAgeVerified(true)}
+          onDecline={() => setDeclined(true)}
+        />
       )}
 
-      <div className={!ageVerified ? "pointer-events-none select-none blur-sm" : ""}>
+      <div
+        className={
+          !ageVerified ? "pointer-events-none blur-sm select-none" : ""
+        }
+      >
         {/* Hero Section - Minimal */}
         <div className="px-6 py-10 text-center">
-          <div className="flex flex-col items-center justify-center max-w-2xl mx-auto">
+          <div className="mx-auto flex max-w-2xl flex-col items-center justify-center">
             <div className="mb-3">
               <Image
                 src="/images/logo.png"
@@ -144,27 +164,42 @@ export default function SurveyLanding() {
                 priority
               />
             </div>
-            <h1 className="text-2xl font-light tracking-wide" style={{ color: TEXT_DARK }}>
+            <h1
+              className="text-2xl font-light tracking-wide"
+              style={{ color: TEXT_DARK }}
+            >
               သင့်အမြင်ကို မျှဝေပါ
             </h1>
-            <p className="text-sm mt-1.5 font-light tracking-wider opacity-70" style={{ color: TEXT_DARK }}>
+            <p
+              className="mt-1.5 text-sm font-light tracking-wider opacity-70"
+              style={{ color: TEXT_DARK }}
+            >
               ကျွန်ုပ်တို့ကို အကောင်းဆုံးဖန်တီးပေးပါ
             </p>
           </div>
         </div>
 
         {/* Progress Bar - Clean */}
-        <div className="sticky top-0 z-10 border-b" style={{ backgroundColor: PRIMARY, borderColor: PRIMARY_DARK }}>
+        <div
+          className="sticky top-0 z-10 border-b"
+          style={{ backgroundColor: PRIMARY, borderColor: PRIMARY_DARK }}
+        >
           <div className="mx-auto max-w-2xl px-6 py-3.5">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <span className="text-xs font-medium tracking-wider" style={{ color: TEXT_DARK }}>
+                <span
+                  className="text-xs font-medium tracking-wider"
+                  style={{ color: TEXT_DARK }}
+                >
                   {answeredCount} / {QUESTIONS.length}
                 </span>
-                <div className="w-32 h-1 rounded-full bg-white/40 overflow-hidden">
+                <div className="h-1 w-32 overflow-hidden rounded-full bg-white/40">
                   <div
                     className="h-full rounded-full transition-all duration-500 ease-out"
-                    style={{ width: `${progress * 100}%`, backgroundColor: TEXT_DARK }}
+                    style={{
+                      width: `${progress * 100}%`,
+                      backgroundColor: TEXT_DARK,
+                    }}
                   />
                 </div>
               </div>
@@ -172,8 +207,8 @@ export default function SurveyLanding() {
                 {QUESTIONS.map((q, i) => (
                   <div
                     key={i}
-                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                      isAnswered(q) ? 'bg-black' : 'bg-white/40'
+                    className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${
+                      isAnswered(q) ? "bg-black" : "bg-white/40"
                     }`}
                   />
                 ))}
@@ -188,7 +223,7 @@ export default function SurveyLanding() {
             {QUESTIONS.map((q, i) => (
               <div
                 key={q.id}
-                className="bg-white/10 backdrop-blur-sm rounded-xl p-5 transition-all duration-200 hover:bg-white/15 border border-white/10"
+                className="rounded-xl border border-white/10 bg-white/10 p-5 backdrop-blur-sm transition-all duration-200 hover:bg-white/15"
               >
                 <div className="flex items-start gap-3">
                   <div className="mt-1">
@@ -198,14 +233,17 @@ export default function SurveyLanding() {
                       <Circle size={16} className="text-black/30" />
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
+                    // In SurveyLanding.tsx, update the QuestionCard props
                     <QuestionCard
                       index={i}
                       question={q}
                       answer={answers}
-                      onAnswer={(id: keyof Answers, val: any) => setAnswer(id, val)}
+                      onAnswer={(id: string, val: any) =>
+                        setAnswer(id as keyof Answers, val)
+                      }
                       availableOptions={
-                        q.id === "location" 
+                        q.id === "location"
                           ? Object.keys(REGIONS_AND_STATES)
                           : []
                       }
@@ -223,7 +261,7 @@ export default function SurveyLanding() {
             <button
               disabled={!allAnswered}
               onClick={handleSubmit}
-              className="w-full py-3.5 px-6 text-sm font-medium tracking-wide transition-all duration-200 rounded-xl flex items-center justify-center gap-2"
+              className="flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-medium tracking-wide transition-all duration-200"
               style={{
                 backgroundColor: allAnswered ? TEXT_DARK : "rgba(0,0,0,0.2)",
                 color: allAnswered ? PRIMARY : "rgba(0,0,0,0.4)",
@@ -232,10 +270,13 @@ export default function SurveyLanding() {
               }}
             >
               တင်သွင်းမည်
-              <ChevronRight size={18} className={allAnswered ? "opacity-100" : "opacity-30"} />
+              <ChevronRight
+                size={18}
+                className={allAnswered ? "opacity-100" : "opacity-30"}
+              />
             </button>
             {!allAnswered && (
-              <p className="text-xs text-center mt-3 tracking-wider text-black/50">
+              <p className="mt-3 text-center text-xs tracking-wider text-black/50">
                 မေးခွန်းအားလုံးကို ဖြေဆိုပြီးမှ တင်သွင်းပါ
               </p>
             )}
@@ -246,11 +287,11 @@ export default function SurveyLanding() {
       {showThanksDialog && (
         <ThanksDialog
           onContinue={() => {
-            setShowThanksDialog(false);
-            router.push("/thank-you");
+            setShowThanksDialog(false)
+            router.push("/thank-you")
           }}
         />
       )}
     </div>
-  );
+  )
 }
